@@ -9,8 +9,8 @@ numpy
 seaborn
 matplotlib
 tensorflow
-scikit-learn
+scikit-learn==1.3.2
 xgboost
-streamlit
+streamlit==1.31.1
 optuna 
 joblib

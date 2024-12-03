@@ -10,6 +10,7 @@ import sys
 import nltk
 import time
 import pdfplumber
+import docx
 from gensim.models import Word2Vec, KeyedVectors
 from nltk import sent_tokenize
 from gensim.utils import simple_preprocess
@@ -22,8 +23,13 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # Pickle files 
-wrd2vec = pickle.load(open('word2vec.pkl','rb'))
-Clf_model = joblib.load('final_model.pkl')
+wrd2vec = pickle.load(open('artifacts\word2vec.pkl','rb'))
+Clf_model = joblib.load('artifacts\model.pkl')
+
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('punkt_tab')
 
 # Function for data preprocessing
 def preprocess_data(text):
@@ -52,12 +58,26 @@ def extract_text_from_pdf(file_path):
         extracted_text = "\n".join(page.extract_text() for page in pdf.pages if page.extract_text())
     return extracted_text
 
+# Function to extract text from DOCX
+def extract_text_from_docx(file_path):
+    doc = docx.Document(file_path)
+    text = "\n".join(para.text for para in doc.paragraphs)
+    return text
+
 st.title(':red[Resume Classification]',)
-resume_file = st.file_uploader('Upload your resume',type=['pdf'])
+resume_file = st.file_uploader('Upload your resume',type=['pdf','docx'])
 
 if st.button('classify'):
    if resume_file is not None:
-       extracted_txt = extract_text_from_pdf(resume_file)
+       file_type = resume_file.name.split('.')[-1]
+
+       if file_type == 'pdf':
+            extracted_txt = extract_text_from_pdf(resume_file)
+       elif file_type == 'docx':
+            extracted_txt = extract_text_from_docx(resume_file)
+       else:
+            extracted_txt = ""
+
        if extracted_txt.strip():
             pre = preprocess_data(extracted_txt)
             pre_cleaned = preprocess_data2(pre)
@@ -75,9 +95,9 @@ if st.button('classify'):
             else:
                     st.write('This Uploaded Resume is SQL Developer')
        else:
-            st.write('No text found in the uploaded PDF. Please upload valid PDF')
+            st.write('No text found in the uploaded file . Please upload valid PDF or DOCX file')
    else:
-        st.write('Please upload your PDF file')
+        st.write('Please upload your Resume file')
 
 
     
